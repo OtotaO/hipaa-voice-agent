@@ -18,6 +18,7 @@ from huggingface_hub import InferenceClient
 from dotenv import load_dotenv
 from loguru import logger
 from pydantic import BaseModel
+from intent_router import IntentRouter, ClinicalIntent
 
 # Load environment variables
 load_dotenv()
@@ -64,6 +65,9 @@ class MedicalScribe:
             model="mistralai/Mistral-7B-Instruct-v0.2",
             token=self.hf_token
         )
+
+        # Initialize intent router
+        self.intent_router = IntentRouter()
 
         logger.info("Medical Scribe initialized successfully")
 
@@ -138,6 +142,19 @@ class MedicalScribe:
                 "utterances": [],
                 "error": str(e)
             }
+
+    async def route_intent(self, text: str) -> Dict:
+        """Route transcribed text to appropriate clinical intent"""
+        result = self.intent_router.route(text)
+        logger.info(f"Intent: {result.intent} (confidence: {result.confidence:.2f})")
+        logger.info(f"Entities: {result.entities}")
+        return {
+            "intent": result.intent,
+            "confidence": result.confidence,
+            "entities": result.entities,
+            "requires_confirmation": result.requires_confirmation,
+            "safety_flags": result.safety_flags
+        }
 
     async def generate_soap_note(self, transcript: str) -> ClinicalNote:
         """
