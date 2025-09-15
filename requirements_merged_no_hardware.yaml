@@ -1,0 +1,278 @@
+meta:
+  version: "1.1"
+  last_updated: "2025-09-14"
+  priority_scheme: "MoSCoW"
+  profile: "No-Hardware (Built-in mic + speakers; half-duplex)"
+
+users:
+  roles: [attending MD, resident, NP/PA] # MUST
+  settings: [outpatient clinic, telehealth] # MUST
+  specialties: [primary care, internal medicine, cardiology, endocrinology, family medicine] # MUST - top 5
+  typical_session_length_min: 15 # MUST
+  typical_sessions_per_day: 20 # MUST
+  patient_present_pct: 85 # MUST
+  accessibility: [hearing impaired support, voice shortcuts for mobility impaired] # SHOULD
+
+use_cases:
+  ranked_tasks: # MUST - by time saved
+    1: "Ambient scribe → SOAP note (saves 5-7 min)"
+    2: "Generate ICD-10/CPT codes (saves 2-3 min)"
+    3: "Retrieve last 3 labs/vitals (saves 2 min)"
+    4: "Create after-visit summary (saves 3 min)"
+    5: "Document ROS/Physical exam (saves 2 min)"
+    6: "Generate E&M level justification (saves 2 min)"
+    7: "Create referral letter (saves 5 min)"
+    8: "Message team with tasks (saves 1 min)"
+    9: "Add to problem list (saves 1 min)"
+    10: "Document patient education (saves 2 min)"
+  documentation_mode: hybrid # MUST
+  order_entry: [labs, imaging] # SHOULD - read-back only in v1 (document + queue; provider confirms)
+  chart_navigation: [labs, meds, allergies, problem list, vitals, imaging reports, previous notes] # MUST
+  refill_policies: "Non-controlled only; require diagnosis link; verify last fill >21 days" # SHOULD
+  coding_scope: [ICD-10, CPT, E&M level, MIPS quality measures] # MUST
+  avs:
+    enabled: true # MUST
+    languages: [en, es] # SHOULD
+  inbox_portal: [triage messages, quick replies, result notifications] # COULD
+  team_messaging:
+    enabled: true # SHOULD
+    channels: [nurse, MA, front desk, referral coordinator]
+  prior_auth:
+    enabled: true # COULD
+    formats: [PDF forms, payer portals]
+  telehealth:
+    enabled: true # MUST
+    features: [consent capture, time documentation, video attestation]
+  device_control: [keyboard PTT] # SHOULD - no dedicated hardware
+
+ehr:
+  vendors: [Epic, Cerner, athenahealth, eClinicalWorks, NextGen] # MUST - Phase 1-2
+  integration: [SMART on FHIR, FHIR R4 REST, HL7 v2 fallback] # MUST
+  fhir_resources: # MUST
+    read: [Patient, Encounter, Observation, DiagnosticReport, MedicationStatement, Condition, AllergyIntolerance, Procedure, CarePlan, DocumentReference]
+    write: [DocumentReference, Observation, Communication, Task] # Phase 2 (safe writes first)
+  auth: "OAuth2 SMART launch context" # MUST
+  read_write_slas:
+    read_latency_ms: 500 # MUST
+    write_latency_ms: 1000 # SHOULD
+    idempotency: "UUID-based deduplication" # MUST
+  audit_fields: [userId, patientId, encounterId, action, resourceType, before, after, timestamp, sessionId] # MUST
+  soft_fail: "Queue writes; cache reads 1h; graceful degradation to read-only; clipboard fallback" # MUST
+
+voice_ux:
+  modes: [ambient scribe, command mode, hands-free hybrid] # MUST
+  defaults:
+    ambient_enabled: false            # default OFF with built-in audio
+    ptt_required: true                # keyboard push-to-talk required
+    provider_mode: false              # starts in patient-safe mode
+  wake: "push-to-talk by keyboard (e.g., Shift key); wake word disabled by default" # MUST
+  barge_in: false # MUST (half-duplex to prevent TTS→ASR echo)
+  duplex_mode: "half-duplex (ASR paused during TTS)" # MUST
+  confirmations: "High-risk: explicit verbal confirm; Low-risk: visual only" # MUST
+  confirmation_phrases: # MUST
+    medication: "I heard [medication] [dose] [route] [frequency]. Say 'confirm' or 'cancel'"
+    allergy: "Adding [allergy] with reaction [reaction]. Confirm?"
+  readback_style: "speaker-safe default; say 'read back' for verbose; say 'read PHI aloud' to include identifiers" # MUST
+  multi_party: "Diarization OFF by default; assume provider-only when PTT held" # SHOULD
+  accent_strategy: "Custom pronunciation; medical lexicon; learning mode" # MUST
+  error_phrases: # MUST
+    no_understand: "Let me clarify that"
+    no_permission: "I'll note that for manual entry"
+    ehr_down: "I'll save that locally and sync when available"
+  phi_audio_policy: "Speaker-safe default: no names/MRNs/exact doses over speakers unless explicitly requested ('read PHI aloud')." # MUST
+  timeouts:
+    no_speech_ms: 7000 # MUST
+    max_utterance_ms: 30000 # MUST
+    repeat_count: 2 # MUST
+  providers:
+    asr: "Deepgram Medical (primary), Azure Speech (fallback)" # MUST
+    tts: "Azure Neural (primary), edge-tts (fallback)" # SHOULD
+  ui_surfaces: [status LED, live transcript, correction panel, confidence indicators] # MUST
+
+privacy:
+  hipaa_baa: true # MUST - all vendors
+  baa_vendors: [Deepgram, Microsoft Azure, AWS, Google Cloud] # MUST
+  retention_days: # MUST
+    audio: 0 # immediate deletion
+    transcripts: 30
+    logs: 2555 # 7 years
+    prompts: 7
+    outputs: 30
+  data_residency: "US-only for PHI" # MUST
+  encryption: # MUST
+    transit: "TLS 1.3"
+    rest: "AES-256-GCM"
+    kms: "AWS KMS with customer-managed keys"
+  consent: # MUST
+    capture: "Written at intake; verbal confirmation per session"
+    re_consent: "Material changes; annual"
+    opt_out: "Immediate; purge within 24hr"
+    wording: "This visit may be transcribed to assist documentation. Say 'no recording' to opt out."
+  rbac_matrix: # MUST
+    attending: [read_all, write_own, sign_notes]
+    resident: [read_assigned, write_own, require_cosign]
+    np_pa: [read_assigned, write_own, sign_notes]
+    rn: [read_assigned, add_vitals]
+    ma: [read_limited, add_vitals]
+    scribe: [read_assigned, write_draft]
+  audit_monitoring: # MUST
+    frequency: "Real-time for access; daily for anomalies"
+    anomaly_detection: "ML-based unusual access patterns"
+    phi_exfil_controls: "DLP, rate limiting, geo-blocking"
+  model_governance: # MUST
+    prompt_logging: "Masked PHI with tokens"
+    content_filtering: "No PHI in training"
+    audit_prompts: true
+  redaction: "Automated NER-based PHI detection and masking" # MUST
+  incident_response: # MUST
+    rto_hours: 4
+    rpo_hours: 1
+    breach_notification_hours: 72
+    process: "Isolate → Assess → Contain → Notify → Remediate"
+  guideline_alignment: "ONC Cures Act compliant; no info blocking" # MUST
+
+nlu:
+  task_routing: # MUST
+    deterministic: [med_doses, lab_values, vitals, dates]
+    llm_structured: [soap_notes, assessments, plans]
+    llm_freetext: [patient_education, referral_letters]
+    tool_augmented: [icd10_lookup, drug_interactions, dosing_calc]
+  grounding: # MUST
+    sources: [patient_chart, drug_database, clinical_guidelines, lab_reference_ranges]
+    freshness_sla_hours: 24
+    update_frequency: "Real-time for patient data; daily for references"
+  hallucination_controls: # MUST
+    retrieval_required: true
+    no_answer_threshold: 0.85
+    verification: "Dual-model consensus for critical facts"
+  entity_resolution: # MUST
+    patient: "MRN + name + DOB matching"
+    medication: "RxNorm codes + brand/generic mapping"
+    dose: "Numeric extraction with unit normalization"
+    route: "Standard abbreviation expansion"
+    frequency: "Standard sig code mapping"
+    laterality: "Left/right/bilateral detection"
+    body_site: "SNOMED body site codes"
+    timing: "Relative and absolute date parsing"
+  temporal_reasoning: # MUST
+    approach: "Rule-based for relative dates; NER for absolute"
+    examples: ["last 3 months", "since July", "previous visit", "trending up"]
+  negation_uncertainty: # MUST
+    policy: "NegEx algorithm + context verification"
+    examples: ["denies chest pain", "no fever", "unlikely malignant", "possible pneumonia"]
+  summarization_templates: # MUST
+    primary_care: "SOAP with emphasis on preventive care"
+    specialty: "APSO with procedure focus"
+    emergency: "HPI + MDM focus"
+  output_formats: # MUST
+    structured: "FHIR Bundle JSON"
+    text: "Markdown with headers"
+    ehr_specific: "Epic SmartText, Cerner PowerNote"
+  prompt_versioning: # MUST
+    repo: "Git with semantic versioning"
+    change_control: "Physician review for clinical prompts"
+    rollback: "Instant with version pinning"
+  multilingual: [en, es, zh, vi, ko] # SHOULD - top 5 by patient population
+
+safety:
+  risk_catalog: # MUST
+    high: [controlled_substances, allergies, critical_labs, dose_changes, stop_orders]
+    medium: [new_medications, referrals, imaging_orders]
+    low: [vitals_documentation, patient_education, follow_up]
+  double_confirm: # MUST
+    required: [controlled_substances, allergy_additions, critical_med_changes, refills_without_recent_visit]
+    wording: "Please confirm: [action]. Say 'yes' to proceed or 'no' to cancel."
+  hard_stops: # MUST
+    allergy_conflict: "Documented allergy to [drug]. Order blocked. Suggesting alternatives."
+    dose_outlier: "Dose exceeds safe range. Maximum: [max]. Please verify."
+    interaction: "Serious interaction with [drug]. Consult required."
+  display_context: true # MUST - show allergies/problems during ordering
+  provider_only_mode: # MUST
+    toggle: "Say 'provider mode' to enable"
+    features: "Allows explicit PHI readback and discussion of differentials"
+    switching: "Say 'patient mode' to return"
+  clinical_templates: # MUST
+    review_frequency: "Quarterly"
+    review_board: "Medical director + specialty chiefs"
+    version_control: true
+  off_label_deflection: "I'll document that for physician review" # MUST
+  escalation: # MUST
+    path: "AI uncertain → Human scribe → Manual entry"
+    triggers: "Confidence <70%, critical meds, patient safety concern"
+
+performance:
+  asr_latency_p95_ms: 400 # MUST (goal)
+  asr_wer_pct: 8.0 # MUST (pilot target with built-in audio; original goal 5.0 retained as stretch)
+  e2e_latency_p95_ms: 1700 # MUST (half-duplex adds ~200 ms over original 1500 ms goal)
+  availability_slos: # MUST
+    asr: 99.9
+    llm: 99.5
+    ehr_api: 99.0
+  offline_capabilities: "Local recording; queued transcription; deferred sync" # MUST
+  cost_per_user_day_usd: 10.00 # MUST - all-in with API costs
+  telemetry: # MUST (+ audio-specific metrics for this profile)
+    - time_saved_minutes
+    - clicks_avoided_count
+    - notes_completed_in_visit_pct
+    - after_hours_documentation_minutes
+    - rework_rate_pct
+    - provider_satisfaction_score
+    - speaker_safe_events_count
+    - barge_in_attempts_blocked
+    - echo_cancellations_triggered
+    - phi_readback_denials_count
+    - provider_mode_switches_count
+
+hardware:
+  policy: "No dedicated hardware procurement in v1; built-in microphones and speakers are default"
+  echo_cancellation: "Software AEC required; half-duplex default"
+  ambient_target_db_max: 60
+  notes: "Headsets optional; not part of v1 scope"
+
+content:
+  note_templates: # MUST
+    primary_care: "CC, HPI, ROS (14-point), PE, Assessment, Plan"
+    cardiology: "CC, HPI, Cardiac ROS, CV Exam, Assessment, Plan, Risk Factors"
+    endocrine: "CC, HPI, Glucose Log, Exam, A1C Trend, Assessment, Plan"
+    psychiatry: "CC, HPI, MSE, Assessment, Plan, Safety"
+  smart_phrases: # SHOULD
+    - "#dm2.controlled": "Type 2 diabetes, controlled, A1C at goal"
+    - "#htn.uncontrolled": "Hypertension, uncontrolled, adjust medications"
+    - "#preventive.utd": "Preventive care up to date"
+    - "#followup.3mo": "Follow up in 3 months or sooner if symptoms worsen"
+  patient_instructions: # MUST
+    reading_level: "5th-8th grade"
+    languages: [en, es, zh]
+    personalization: "Include patient name, specific medications, next steps"
+  billing_capture: # MUST
+    mdm_prompts: "Document complexity, data reviewed, risk level"
+    time_statements: "Total time: [X] minutes with >50% counseling"
+    modifier_alerts: "Telehealth, new patient, preventive"
+
+business:
+  success_kpis: # MUST
+    - "Documentation time: <3 min per encounter"
+    - "After-hours charting: ↓50%"
+    - "Note completeness: >95%"
+    - "Provider NPS: ≥40"
+    - "Revenue capture: ↑$30K/provider/year"
+  pilot: # MUST
+    sites: ["Academic primary care", "Community cardiology"]
+    size: "10 providers per site"
+    timeline: "8 weeks"
+    design: "Stepped-wedge with matched controls"
+  training: # MUST
+    who: "Super users train peers"
+    duration: "1 hour hands-on"
+    materials: ["Video tutorials", "Quick reference cards", "FAQ"]
+    ongoing: "Monthly tips, quarterly updates"
+  support: # MUST
+    model: "Tier 1 in-app chat, Tier 2 clinical support"
+    mttr_hours: 1
+    availability: "7am-7pm local time"
+  approvals: # MUST
+    - "HIPAA Security Officer"
+    - "Chief Medical Officer"
+    - "IT Security Review Board"
+    - "Medical Executive Committee"
+    - "Pharmacy & Therapeutics (for med features)"

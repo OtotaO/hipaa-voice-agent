@@ -1,0 +1,196 @@
+{
+  "hardware_recommendations": {
+    "microphones": {
+      "tier_1_premium": {
+        "model": "Jabra Evolve2 75",
+        "cost_usd": 379,
+        "features": [
+          "Active noise cancellation",
+          "40mm speakers",
+          "8-microphone technology",
+          "37-hour battery",
+          "Wireless range 30m"
+        ],
+        "best_for": "Attending physicians, telehealth"
+      },
+      "tier_2_standard": {
+        "model": "Plantronics Voyager Focus UC",
+        "cost_usd": 199,
+        "features": [
+          "Active noise cancellation",
+          "Smart sensor technology",
+          "12-hour battery",
+          "Dynamic mute alert"
+        ],
+        "best_for": "Residents, clinic use"
+      },
+      "tier_3_budget": {
+        "model": "Logitech H390",
+        "cost_usd": 39,
+        "features": [
+          "USB wired",
+          "Noise-cancelling mic",
+          "Inline controls",
+          "Padded headband"
+        ],
+        "best_for": "Backup, training, students"
+      },
+      "room_array": {
+        "model": "Stem Audio Ceiling Array",
+        "cost_usd": 1799,
+        "features": [
+          "Beamforming technology",
+          "120-degree coverage",
+          "Echo cancellation",
+          "PoE+ powered"
+        ],
+        "best_for": "Exam rooms, conference rooms"
+      }
+    },
+    "deployment_packages": {
+      "single_provider": {
+        "hardware_cost": 379,
+        "setup": "1 premium headset",
+        "monthly_operational": 50
+      },
+      "small_clinic_5_providers": {
+        "hardware_cost": 1895,
+        "setup": "5 standard headsets",
+        "monthly_operational": 250
+      },
+      "medium_practice_20_providers": {
+        "hardware_cost": 7580,
+        "setup": "20 mixed headsets",
+        "monthly_operational": 1000
+      },
+      "enterprise_100_providers": {
+        "hardware_cost": 27900,
+        "setup": "100 headsets + 10 room arrays",
+        "monthly_operational": 5000
+      }
+    }
+  },
+  "api_cost_estimates": {
+    "per_encounter": {
+      "assumptions": {
+        "avg_duration_min": 15,
+        "audio_size_mb": 15,
+        "transcript_tokens": 3000,
+        "llm_output_tokens": 1500
+      },
+      "costs_usd": {
+        "deepgram_medical": 0.22,
+        "azure_speech_backup": 0.25,
+        "huggingface_inference": 0.15,
+        "aws_storage": 0.01,
+        "total_per_encounter": 0.63
+      }
+    },
+    "per_provider_month": {
+      "assumptions": {
+        "encounters_per_day": 20,
+        "work_days_per_month": 20
+      },
+      "costs_usd": {
+        "api_costs": 252,
+        "infrastructure": 50,
+        "support_allocation": 30,
+        "compliance_overhead": 100,
+        "total_per_provider": 432
+      }
+    },
+    "break_even_analysis": {
+      "revenue_increase": {
+        "better_coding_annual": 15000,
+        "time_savings_value_annual": 30000,
+        "reduced_scribe_cost_annual": 36000,
+        "total_value_annual": 81000
+      },
+      "costs_annual": {
+        "software_subscription": 5184,
+        "hardware_amortized": 127,
+        "training_onboarding": 500,
+        "total_cost_annual": 5811
+      },
+      "roi": {
+        "net_benefit_annual": 75189,
+        "roi_percentage": 1294,
+        "payback_period_months": 0.9
+      }
+    }
+  },
+  "latency_estimates": {
+    "component_latencies_ms": {
+      "microphone_capture": 10,
+      "audio_preprocessing": 20,
+      "network_upload": 50,
+      "deepgram_transcription": 400,
+      "llm_processing": 800,
+      "ehr_api_read": 500,
+      "ehr_api_write": 1000,
+      "ui_render": 50
+    },
+    "end_to_end_latencies_ms": {
+      "transcription_only": 480,
+      "note_generation": 1330,
+      "full_ehr_roundtrip": 2830
+    },
+    "performance_targets": {
+      "p50": 1200,
+      "p95": 2500,
+      "p99": 4000
+    }
+  },
+  "scaling_projections": {
+    "month_1": {
+      "providers": 5,
+      "encounters": 400,
+      "monthly_cost": 2160,
+      "issues_expected": ["Audio quality", "Template refinement", "Training needs"]
+    },
+    "month_3": {
+      "providers": 25,
+      "encounters": 2000,
+      "monthly_cost": 10800,
+      "issues_expected": ["Scale bottlenecks", "Support volume", "Edge cases"]
+    },
+    "month_6": {
+      "providers": 100,
+      "encounters": 8000,
+      "monthly_cost": 43200,
+      "issues_expected": ["Multi-site coordination", "Specialty variations", "Integration complexity"]
+    },
+    "year_1": {
+      "providers": 500,
+      "encounters": 40000,
+      "monthly_cost": 216000,
+      "infrastructure_needs": ["Dedicated support team", "24/7 monitoring", "Regional data centers"]
+    }
+  },
+  "competitive_pricing": {
+    "our_solution": {
+      "monthly_per_provider": 199,
+      "setup_fee": 500,
+      "training_included": true,
+      "hardware_included": false
+    },
+    "competitors": {
+      "nuance_dax": {
+        "monthly_per_provider": 600,
+        "setup_fee": 5000,
+        "notes": "Requires Epic integration"
+      },
+      "abridge": {
+        "monthly_per_provider": 400,
+        "setup_fee": 2000,
+        "notes": "Limited to certain specialties"
+      },
+      "suki": {
+        "monthly_per_provider": 500,
+        "setup_fee": 1000,
+        "notes": "Command-based only"
+      }
+    },
+    "value_proposition": "67% cheaper than Nuance DAX with 80% of features that matter"
+  }
+}

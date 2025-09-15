@@ -1,0 +1,355 @@
+{
+  "intents": [
+    {
+      "rank": 1,
+      "name": "CreateSOAPNote",
+      "priority": "MUST",
+      "description": "Generate structured clinical documentation from conversation",
+      "examples": [
+        "Create SOAP note from this visit",
+        "Document this encounter",
+        "Generate clinical note"
+      ],
+      "entities": ["note_template", "specialty"],
+      "time_saved_min": 7
+    },
+    {
+      "rank": 2,
+      "name": "AddToNoteSection",
+      "priority": "MUST",
+      "description": "Append to specific sections of clinical note",
+      "examples": [
+        "Add to HPI: patient reports worsening shortness of breath for 3 days",
+        "Add to assessment: likely viral URI",
+        "Document in plan: follow up in 2 weeks",
+        "Add to ROS: denies fever, chills, or weight loss",
+        "Physical exam: lungs clear to auscultation bilaterally"
+      ],
+      "entities": ["section", "content"],
+      "time_saved_min": 2
+    },
+    {
+      "rank": 3,
+      "name": "GenerateCodes",
+      "priority": "MUST",
+      "description": "Suggest ICD-10 and CPT codes based on documentation",
+      "examples": [
+        "Suggest billing codes for this visit",
+        "What's the ICD-10 for controlled diabetes?",
+        "Generate E&M level",
+        "Add CPT for EKG"
+      ],
+      "entities": ["code_type", "conditions"],
+      "time_saved_min": 3
+    },
+    {
+      "rank": 4,
+      "name": "RetrieveLabResults",
+      "priority": "MUST",
+      "description": "Get recent lab values and trends",
+      "examples": [
+        "What was her last A1C?",
+        "Show me the last 3 potassium levels",
+        "Any abnormal labs in the past week?",
+        "What's his creatinine trend?",
+        "Pull up the CBC from Tuesday"
+      ],
+      "entities": ["lab_name", "timeframe", "patient_context"],
+      "time_saved_min": 2
+    },
+    {
+      "rank": 5,
+      "name": "RetrieveVitals",
+      "priority": "MUST",
+      "description": "Get vital signs and trends",
+      "examples": [
+        "What's today's blood pressure?",
+        "Show BP trend over last 3 visits",
+        "Current weight?",
+        "Any fever in the past 24 hours?"
+      ],
+      "entities": ["vital_type", "timeframe"],
+      "time_saved_min": 1
+    },
+    {
+      "rank": 6,
+      "name": "OrderLabs",
+      "priority": "SHOULD",
+      "description": "Create lab orders with appropriate indications",
+      "examples": [
+        "Order CBC and CMP",
+        "Order A1C, lipid panel, and TSH",
+        "Add urine culture",
+        "Order troponin stat",
+        "Get blood cultures x2"
+      ],
+      "entities": ["test_names", "priority", "indication"],
+      "time_saved_min": 2
+    },
+    {
+      "rank": 7,
+      "name": "OrderImaging",
+      "priority": "SHOULD",
+      "description": "Create imaging orders with indications",
+      "examples": [
+        "Order chest x-ray for cough",
+        "Order CT abdomen with contrast",
+        "Schedule echo",
+        "Order MRI brain without contrast"
+      ],
+      "entities": ["modality", "body_part", "contrast", "indication", "priority"],
+      "time_saved_min": 2
+    },
+    {
+      "rank": 8,
+      "name": "DocumentMedication",
+      "priority": "MUST",
+      "description": "Document medication changes in note",
+      "examples": [
+        "Starting metformin 500mg twice daily",
+        "Increase lisinopril to 20mg daily",
+        "Discontinue hydrochlorothiazide",
+        "Change to extended release",
+        "Add albuterol inhaler PRN"
+      ],
+      "entities": ["medication", "dose", "route", "frequency", "duration", "indication"],
+      "time_saved_min": 2
+    },
+    {
+      "rank": 9,
+      "name": "RefillMedication",
+      "priority": "SHOULD",
+      "description": "Process medication refill requests",
+      "examples": [
+        "Refill all chronic meds",
+        "Refill metoprolol, 90 day supply",
+        "Approve lisinopril refill",
+        "Refill inhaler with 2 refills"
+      ],
+      "entities": ["medication", "quantity", "refills"],
+      "time_saved_min": 1
+    },
+    {
+      "rank": 10,
+      "name": "RetrieveMedList",
+      "priority": "MUST",
+      "description": "Get current medication list",
+      "examples": [
+        "What medications is she on?",
+        "Show current med list",
+        "Any blood pressure medications?",
+        "Is he on aspirin?"
+      ],
+      "entities": ["medication_class", "specific_med"],
+      "time_saved_min": 1
+    },
+    {
+      "rank": 11,
+      "name": "CheckAllergies",
+      "priority": "MUST",
+      "description": "Retrieve or verify patient allergies",
+      "examples": [
+        "Any drug allergies?",
+        "Is she allergic to penicillin?",
+        "Check for sulfa allergy",
+        "What's the reaction to aspirin?"
+      ],
+      "entities": ["allergen", "reaction_type"],
+      "time_saved_min": 1
+    },
+    {
+      "rank": 12,
+      "name": "GenerateAVS",
+      "priority": "MUST",
+      "description": "Create after-visit summary for patient",
+      "examples": [
+        "Generate patient instructions",
+        "Create after-visit summary",
+        "Print discharge instructions",
+        "Make patient handout for hypertension"
+      ],
+      "entities": ["language", "reading_level", "topics"],
+      "time_saved_min": 3
+    },
+    {
+      "rank": 13,
+      "name": "AddDiagnosis",
+      "priority": "MUST",
+      "description": "Add to problem list or encounter diagnoses",
+      "examples": [
+        "Add diagnosis: Type 2 diabetes",
+        "Add to problem list: hypertension",
+        "Document acute sinusitis",
+        "Remove resolved: UTI"
+      ],
+      "entities": ["diagnosis", "status", "date"],
+      "time_saved_min": 1
+    },
+    {
+      "rank": 14,
+      "name": "CreateReferral",
+      "priority": "SHOULD",
+      "description": "Generate referral with clinical summary",
+      "examples": [
+        "Refer to cardiology for chest pain",
+        "Send to endocrine for diabetes management",
+        "Urgent GI referral",
+        "Refer to PT for back pain"
+      ],
+      "entities": ["specialty", "urgency", "reason", "clinical_info"],
+      "time_saved_min": 5
+    },
+    {
+      "rank": 15,
+      "name": "MessageTeam",
+      "priority": "SHOULD",
+      "description": "Send tasks to care team members",
+      "examples": [
+        "Message nurse: please repeat BP in 10 minutes",
+        "Tell MA to schedule follow-up in 2 weeks",
+        "Ask front desk to get prior auth started",
+        "Message pharmacy about formulary alternative"
+      ],
+      "entities": ["recipient", "message", "urgency"],
+      "time_saved_min": 1
+    },
+    {
+      "rank": 16,
+      "name": "CalculateMDM",
+      "priority": "MUST",
+      "description": "Calculate medical decision making complexity",
+      "examples": [
+        "What's the MDM level?",
+        "Calculate E&M complexity",
+        "Generate billing justification",
+        "Document time spent"
+      ],
+      "entities": ["problems", "data_reviewed", "risk_level"],
+      "time_saved_min": 2
+    },
+    {
+      "rank": 17,
+      "name": "NavigateChart",
+      "priority": "MUST",
+      "description": "Open specific chart sections",
+      "examples": [
+        "Open last cardiology note",
+        "Show discharge summary",
+        "Pull up the echo report",
+        "Go to problem list",
+        "Show growth chart"
+      ],
+      "entities": ["chart_section", "document_type", "date_filter"],
+      "time_saved_min": 1
+    },
+    {
+      "rank": 18,
+      "name": "DocumentEducation",
+      "priority": "SHOULD",
+      "description": "Record patient education provided",
+      "examples": [
+        "Counseled on diabetes management",
+        "Discussed smoking cessation",
+        "Educated about medication compliance",
+        "Reviewed asthma action plan"
+      ],
+      "entities": ["topic", "duration", "materials"],
+      "time_saved_min": 1
+    },
+    {
+      "rank": 19,
+      "name": "SignNote",
+      "priority": "MUST",
+      "description": "Finalize and sign documentation",
+      "examples": [
+        "Sign this note",
+        "Finalize encounter",
+        "Attest and sign",
+        "Cosign resident note"
+      ],
+      "entities": ["note_id", "attestation"],
+      "time_saved_min": 0.5
+    },
+    {
+      "rank": 20,
+      "name": "CreateWorkNote",
+      "priority": "COULD",
+      "description": "Generate work/school excuse",
+      "examples": [
+        "Create work excuse for 3 days",
+        "School note for today's absence",
+        "Return to work with restrictions",
+        "Clear for full duty"
+      ],
+      "entities": ["duration", "restrictions", "return_date"],
+      "time_saved_min": 2
+    }
+  ],
+  "entities": {
+    "medication": {
+      "type": "medication_entity",
+      "extraction": "RxNorm lookup",
+      "attributes": ["name", "dose", "unit", "route", "frequency", "duration", "indication"]
+    },
+    "lab_name": {
+      "type": "lab_entity",
+      "extraction": "LOINC codes",
+      "examples": ["CBC", "BMP", "A1C", "lipid panel", "TSH", "troponin"]
+    },
+    "vital_type": {
+      "type": "vital_entity",
+      "examples": ["blood pressure", "heart rate", "temperature", "weight", "BMI", "oxygen saturation"]
+    },
+    "timeframe": {
+      "type": "temporal_entity",
+      "extraction": "relative and absolute dates",
+      "examples": ["today", "last 3 months", "since January", "past week", "previous visit"]
+    },
+    "section": {
+      "type": "note_section",
+      "values": ["chief complaint", "HPI", "ROS", "physical exam", "assessment", "plan", "PMH", "medications", "allergies"]
+    },
+    "diagnosis": {
+      "type": "diagnosis_entity",
+      "extraction": "ICD-10 lookup",
+      "attributes": ["code", "description", "status", "date"]
+    },
+    "priority": {
+      "type": "order_priority",
+      "values": ["stat", "urgent", "routine", "future"]
+    },
+    "specialty": {
+      "type": "medical_specialty",
+      "examples": ["cardiology", "endocrine", "GI", "pulmonary", "nephrology", "neurology"]
+    }
+  },
+  "utterance_patterns": {
+    "corrections": [
+      "Change that to [value]",
+      "Actually, make it [value]",
+      "Correction: [value]",
+      "No, I meant [value]"
+    ],
+    "confirmations": [
+      "Yes",
+      "Correct",
+      "Confirm",
+      "That's right",
+      "Approved"
+    ],
+    "cancellations": [
+      "Cancel",
+      "Never mind",
+      "Scratch that",
+      "Delete that",
+      "Remove"
+    ],
+    "navigation": [
+      "Go back",
+      "Previous section",
+      "Next patient",
+      "Show more",
+      "Scroll down"
+    ]
+  }
+}

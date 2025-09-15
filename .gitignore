@@ -1,0 +1,60 @@
+# Environment variables - NEVER commit these
+.env
+.env.*
+!.env.example
+
+# API Keys and secrets
+*.key
+*.pem
+*.cert
+credentials.json
+secrets.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Logs (may contain PHI)
+*.log
+logs/
+*.audit
+voice_agent.log
+
+# Data files (may contain PHI)
+*.db
+*.sqlite
+data/
+recordings/
+transcripts/
+exports/
+
+# Test results
+test_results.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
