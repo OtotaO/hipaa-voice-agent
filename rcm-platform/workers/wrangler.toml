@@ -1,0 +1,12 @@
+name = "claim-scrubber"
+main = "claim-scrubber.ts"
+compatibility_date = "2024-01-15"
+
+# Cloudflare Workers AI binding
+[ai]
+binding = "AI"
+
+# Custom domain (set after deploying)
+# routes = [
+#   { pattern = "scrubber.your-domain.com", custom_domain = true }
+# ]
